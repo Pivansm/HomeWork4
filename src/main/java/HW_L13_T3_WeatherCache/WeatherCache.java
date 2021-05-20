@@ -1,5 +1,7 @@
 package HW_L13_T3_WeatherCache;
 
+import antlr.StringUtils;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,33 +31,41 @@ public class WeatherCache {
      * @return actual weather info
      */
     public WeatherInfo getWeatherInfo(String city) {
+        //String cityName = city.substring(0, 1).toUpperCase() + city.substring(1);
+        //String cityName = StringUtils.capitalize(city);
+        String cityName = Character.toUpperCase(city.charAt(0)) + city.substring(1);
         LocalDateTime currentTime = LocalDateTime.now();
-        WeatherInfo cachedInfo = this.cache.get(city);
+        WeatherInfo cachedInfo;
 
-        if (cachedInfo == null || cachedInfo.getExpiryTime() != null && cachedInfo.getExpiryTime().isBefore(currentTime)) {
+        synchronized (lock) { //Установка блокировки перед запросом погоды и изменением данных
 
-            synchronized (lock) { //Установка блокировки перед запросом погоды и изменением данных
+            cachedInfo = this.cache.get(cityName);
 
-                WeatherInfo receivedWeather = this.weatherProvider.get(city);
+            if (cachedInfo == null || cachedInfo.getExpiryTime() != null && cachedInfo.getExpiryTime().isBefore(currentTime)) {
+
+                WeatherInfo receivedWeather = this.weatherProvider.get(cityName);
 
                 if (receivedWeather != null) {
                     receivedWeather.setExpiryTime(currentTime.plusMinutes(5));
-                    this.cache.put(city, receivedWeather);
+                    this.cache.put(cityName, receivedWeather);
                     cachedInfo = receivedWeather;
                 } else {
-                    this.cache.remove(city);
+                    this.cache.remove(cityName);
                 }
             }
         }
 
         return cachedInfo;
+
     }
 
     /**
      * Remove weather info from cache.
      */
-    public void removeWeatherInfo(String city) {
-        this.cache.remove(city);
+    public void removeWeatherInfo(String cityName) {
+        synchronized (lock) { //Установка блокировки перед изменением данных
+            this.cache.remove(cityName);
+        }
     }
 
 }

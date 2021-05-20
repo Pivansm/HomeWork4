@@ -1,5 +1,6 @@
 package HW_L13_T3_WeatherCache;
 
+import com.jayway.jsonpath.JsonPath;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,13 +37,33 @@ public class WeatherProvider {
         uriVariables.put("cityName", city);
         uriVariables.put("apiKey", UNIQUE_APP_ID);
 
-        ResponseEntity<WeatherInfo> responseEntity = restTemplate.getForEntity(
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(
                 WEATHER_URL,
-                WeatherInfo.class,
+                String.class,
                 uriVariables
         );
 
-        return responseEntity.getBody();
+        return buildWeatherInfo(responseEntity);
     }
+
+
+    /**
+     * Формирование объекта WeatherInfo из полученного ответа от get запроса
+     */
+    private WeatherInfo buildWeatherInfo(ResponseEntity<String> responseEntity) {
+
+        String json = responseEntity.getBody();
+
+        return WeatherInfo.builder()
+                .city(JsonPath.read(json, "$.name"))
+                .shortDescription(JsonPath.read(json, "$.weather[0].main"))
+                .description(JsonPath.read(json, "$.weather[0].description"))
+                .temperature(JsonPath.read(json, "$.main.temp"))
+                .feelsLikeTemperature(JsonPath.read(json, "$.main.feels_like"))
+                .windSpeed(JsonPath.read(json, "$.wind.speed"))
+                .pressure(JsonPath.read(json, "$.main.pressure"))
+                .build();
+    }
+
 
 }

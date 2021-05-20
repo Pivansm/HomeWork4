@@ -165,6 +165,10 @@ public class WeatherInfo {
         }
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     @Override
     public String toString() {
         return "WeatherInfo{" + "city='" + city + '\'' +

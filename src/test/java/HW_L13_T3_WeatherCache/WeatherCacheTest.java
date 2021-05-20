@@ -94,13 +94,13 @@ public class WeatherCacheTest {
             Для проверки обновления уже закешированного значения, запрашиваем аналогичный город
             и проверяем сохраненное время в кеше через 5 минут, они должны быть разными
          */
-        //Thread.sleep(300000);
-        Thread.sleep(3000);
+        Thread.sleep(300000);
         WeatherInfo cachedInfo = this.weatherCache.getWeatherInfo(MOSCOW_CITY);
 
         //assert
         assertNotEquals(initInfo.getExpiryTime(), cachedInfo.getExpiryTime());
     }
+
 
     @Test
     public void getWeatherInfoFourthCase() {
@@ -114,8 +114,5 @@ public class WeatherCacheTest {
         //assert
         assertNull(cachedInfo);
     }
-
-
-
 
 }
